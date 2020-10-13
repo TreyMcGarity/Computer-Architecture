@@ -10,6 +10,7 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
+        self.sp = len(self.ram) - 1
 
     def ram_read(self, address):
         return self.ram[address]
@@ -17,22 +18,23 @@ class CPU:
     def ram_write(self, address, value):
         self.ram[address] = value
 
+    # stack functions
+    def push(self, value):
+        self.sp -= 1
+        self.ram[self.sp] = value
+
+    def pop(self):
+        if self.sp < len(self.ram) - 1:
+            value = self.ram[self.sp]
+            self.sp += 1
+            return value
+
     def load(self):
         """Load a program into memory."""
 
         address = 0
         program = []
-        # For now, we've just hardcoded a program:
-        
-        # program = [
-        #     # From print8.ls8
-        #     0b10000010, # LDI R0,8
-        #     0b00000000,
-        #     0b00001000,
-        #     0b01000111, # PRN R0
-        #     0b00000000,
-        #     0b00000001, # HLT
-        # ]
+
         try:
             with open(sys.argv[1]) as f:
                 for line in f:
@@ -48,13 +50,13 @@ class CPU:
 
                     except ValueError:
                         print(f"Unknown number {str_value} on line: 45")
+
         except FileNotFoundError:
             print(f"File not found {sys.argv[1]}")
 
         for instruction in program:
             self.ram[address] = instruction
             address += 1
-
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -95,6 +97,9 @@ class CPU:
         PRN = 0b01000111
         # Day 2:
         MUL = 0b10100010
+        # Day 3:
+        PUSH = 0b01000101
+        POP = 0b01000110
 
         halted = False
 
@@ -116,7 +121,17 @@ class CPU:
                 reg_a = self.ram[self.pc + 1]
                 reg_b = self.ram[self.pc + 2]
                 self.alu("MUL", reg_a, reg_b)
-                self.pc += 3   
+                self.pc += 3 
+
+            elif instruction == PUSH:
+                reg_num = self.ram[self.pc + 1]
+                self.push(self.reg[reg_num])
+                self.pc += 2
+
+            elif instruction == POP:
+                reg_num = self.ram[self.pc + 1]
+                self.pop()
+                self.pc += 2
 
             elif instruction == HLT:
                 halted = True
