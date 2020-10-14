@@ -20,6 +20,7 @@ class CPU:
 
     # stack functions
     def push(self, value):
+        print("pushed:", value)
         self.sp -= 1
         self.ram[self.sp] = value
 
@@ -39,7 +40,6 @@ class CPU:
             with open(sys.argv[1]) as f:
                 for line in f:
                     line = line.strip()
-                    
                     if line == '' or line[0] =='#':
                         continue
                     
@@ -100,6 +100,9 @@ class CPU:
         # Day 3:
         PUSH = 0b01000101
         POP = 0b01000110
+        # Day 4:
+        CALL = 0b01010000
+        RET = 0b00010001
 
         halted = False
 
@@ -132,6 +135,14 @@ class CPU:
                 reg_num = self.ram[self.pc + 1]
                 self.pop()
                 self.pc += 2
+
+            elif instruction == CALL:
+                reg_num = self.ram[self.pc + 1]
+                self.push(self.reg[reg_num])
+                self.pc = self.reg[reg_num]
+
+            elif instruction == RET:
+                self.pc = self.pop()
 
             elif instruction == HLT:
                 halted = True
