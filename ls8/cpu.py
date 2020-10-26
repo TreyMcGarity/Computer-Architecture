@@ -11,6 +11,7 @@ class CPU:
         self.reg = [0] * 8
         self.pc = 0
         self.sp = len(self.ram) - 1
+        self.fl
 
     def ram_read(self, address):
         return self.ram[address]
@@ -27,6 +28,7 @@ class CPU:
     def pop(self):
         if self.sp < len(self.ram) - 1:
             value = self.ram[self.sp]
+            print("popped:", value)
             self.sp += 1
             return value
 
@@ -66,6 +68,16 @@ class CPU:
         #elif op == "SUB": etc
         elif op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
+        elif op == "CMP":
+            if self.reg[reg_a] == self.reg[reg_b]:
+                # set the E flag to 1
+                self.fl = 0b00000001
+            elif self.reg[reg_a] < self.reg[reg_b]:
+                # set the L flag to 1
+                self.fl = 0b00000100
+            elif self.reg[reg_a] > self.reg[reg_b]:
+                # set the G flag to 1
+                self.fl = 0b00000010
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -103,6 +115,11 @@ class CPU:
         # Day 4:
         CALL = 0b01010000
         RET = 0b00010001
+        # Day 5:
+        CMP = 0b10100111
+        JMP = 0b01010100
+        JEQ = 0b01010101
+        JNE = 0b01010110
 
         halted = False
 
@@ -135,6 +152,24 @@ class CPU:
                 reg_num = self.ram[self.pc + 1]
                 self.pop()
                 self.pc += 2
+
+            elif instruction == JMP:
+                reg_num = self.ram_read(self.pc + 1)
+                self.pc = self.reg[reg_num]
+
+            elif instruction == JEQ:
+                reg_num = self.ram_read(self.pc + 1)
+                if self.fl == :
+                    self.pc = self.reg[reg_num]
+                else:
+                    self.pc += 1
+
+            elif instruction == JNE:
+                reg_num = self.ram_read(self.pc + 1)
+                if self.fl == :
+                    self.pc = self.reg[reg_num]
+                else:
+                    self.pc += 1
 
             elif instruction == CALL:
                 reg_num = self.ram[self.pc + 1]
